@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>초대장 · 매튜 성수</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdfdfb;
+    --ink: #3a3733;
+    --ink-soft: #8a857c;
+    --gold: #c2a25c;
+    --gold-soft: #e3d3ae;
+    --wax: #6b4f9e;
+    --wax-dark: #513a7e;
+    --wax-light: #8d74bd;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #f4f2ee 0%, #e9e6df 100%);
+    font-family: 'Nanum Pen Script', cursive;
+    color: var(--ink);
+    overflow-x: hidden;
+    padding: 24px 12px;
+  }
+
+  .scene {
+    perspective: 1400px;
+    width: min(560px, 94vw);
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 1.35rem;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    letter-spacing: 0.04em;
+    transition: opacity 0.5s ease;
+  }
+  .scene.open .hint { opacity: 0; }
+
+  /* ---------- Envelope ---------- */
+  .envelope {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    transform-style: preserve-3d;
+    transition: transform 0.8s ease;
+  }
+
+  .env-back {
+    position: absolute;
+    inset: 0;
+    background: var(--paper);
+    border-radius: 8px;
+    box-shadow: 0 18px 40px rgba(60, 50, 90, 0.18);
+  }
+
+  /* Card inside the envelope */
+  .card-wrap {
+    position: absolute;
+    left: 4%;
+    right: 4%;
+    top: 5%;
+    bottom: 5%;
+    z-index: 2;
+    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.55s;
+  }
+  .scene.open .card-wrap {
+    transform: translateY(-115%);
+  }
+  .scene.settled .card-wrap {
+    position: static;
+    transform: none;
+    transition: none;
+  }
+
+  .card {
+    background: var(--paper);
+    border-radius: 6px;
+    border: 1px solid var(--gold-soft);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.07);
+    height: 100%;
+    overflow: hidden;
+  }
+  .scene.settled .card {
+    height: auto;
+    overflow: visible;
+    box-shadow: 0 24px 60px rgba(60, 50, 90, 0.16);
+    animation: cardIn 0.7s ease both;
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(30px) scale(0.97); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* Envelope front pockets (above card, below flap) */
+  .env-front {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    border-radius: 8px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .env-front::before,
+  .env-front::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 78%;
+    height: 100%;
+    background: linear-gradient(180deg, #ffffff 0%, #f6f4ef 100%);
+  }
+  .env-front::before {
+    left: -28%;
+    transform: skewX(32deg);
+    box-shadow: 6px 0 10px rgba(0,0,0,0.04);
+  }
+  .env-front::after {
+    right: -28%;
+    transform: skewX(-32deg);
+    box-shadow: -6px 0 10px rgba(0,0,0,0.04);
+  }
+  .env-bottom {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    border-radius: 8px;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .env-bottom::before {
+    content: "";
+    position: absolute;
+    bottom: -52%;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #fbfaf7 0%, #f1eee7 100%);
+    clip-path: polygon(0 52%, 50% 6%, 100% 52%, 100% 100%, 0 100%);
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  }
+
+  /* Flap */
+  .flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 55%;
+    z-index: 6;
+    transform-origin: top center;
+    transform-style: preserve-3d;
+    transition: transform 0.9s cubic-bezier(0.6, 0.05, 0.3, 1), z-index 0s 0.9s;
+  }
+  .flap .face {
+    position: absolute;
+    inset: 0;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    backface-visibility: hidden;
+  }
+  .flap .face.front {
+    background: linear-gradient(180deg, #ffffff 0%, #f3f0ea 100%);
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.08));
+  }
+  .flap .face.back {
+    background: #efece5;
+    transform: rotateX(180deg);
+  }
+  .scene.open .flap {
+    transform: rotateX(180deg);
+    z-index: 1;
+  }
+
+  /* Wax seal */
+  .seal {
+    position: absolute;
+    left: 50%;
+    top: 55%;
+    transform: translate(-50%, -50%);
+    z-index: 7;
+    width: clamp(64px, 15%, 88px);
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 46% 54% 52% 48% / 52% 47% 53% 48%;
+    background:
+      radial-gradient(circle at 32% 28%, var(--wax-light) 0%, var(--wax) 45%, var(--wax-dark) 100%);
+    box-shadow:
+      0 4px 10px rgba(70, 45, 120, 0.4),
+      inset 0 2px 4px rgba(255,255,255,0.25),
+      inset 0 -3px 6px rgba(0,0,0,0.25);
+    color: #f3edff;
+    font-family: 'Gowun Batang', serif;
+    font-size: clamp(1.1rem, 3.4vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: transform 0.25s ease, opacity 0.4s ease;
+  }
+  .seal::before {
+    content: "";
+    position: absolute;
+    inset: 12%;
+    border-radius: inherit;
+    border: 1.5px solid rgba(255,255,255,0.35);
+  }
+  .seal:hover { transform: translate(-50%, -50%) scale(1.07) rotate(-3deg); }
+  .seal:focus-visible {
+    outline: 3px solid var(--gold);
+    outline-offset: 4px;
+  }
+  .scene.open .seal {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(0.6) rotate(20deg);
+  }
+
+  .scene.open .envelope { transform: translateY(28%); }
+
+  /* After opening: collapse the envelope shell but keep the card (its child) visible */
+  .scene.settled .envelope {
+    aspect-ratio: auto;
+    height: auto;
+    transform: none;
+    transition: none;
+  }
+  .scene.settled .env-back,
+  .scene.settled .env-front,
+  .scene.settled .env-bottom,
+  .scene.settled .flap,
+  .scene.settled .seal { display: none; }
+
+  /* ---------- Card content ---------- */
+  .card-inner {
+    padding: clamp(28px, 6vw, 48px) clamp(22px, 6vw, 46px);
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .scene.settled .card-inner { opacity: 1; }
+
+  .card-top-line {
+    width: 46px;
+    height: 1px;
+    background: var(--gold);
+    margin: 0 auto 6px;
+  }
+  .card-eyebrow {
+    font-family: 'Gowun Batang', serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.42em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .greeting {
+    font-size: clamp(1.7rem, 5vw, 2.2rem);
+    line-height: 1.45;
+    margin-bottom: 26px;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin: 22px 0;
+    color: var(--gold);
+  }
+  .divider::before, .divider::after {
+    content: "";
+    height: 1px;
+    width: 60px;
+    background: var(--gold-soft);
+  }
+  .divider svg { width: 14px; height: 14px; }
+
+  .details {
+    display: grid;
+    gap: 16px;
+    justify-items: center;
+    margin-bottom: 8px;
+  }
+  .detail .label {
+    font-family: 'Gowun Batang', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    margin-bottom: 3px;
+  }
+  .detail .value {
+    font-size: clamp(1.5rem, 4.4vw, 1.85rem);
+    line-height: 1.35;
+  }
+  .detail .value small {
+    display: block;
+    font-size: 0.72em;
+    color: var(--ink-soft);
+  }
+
+  /* Map section */
+  .map-section {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px dashed var(--gold-soft);
+  }
+  .map-section .label {
+    font-family: 'Gowun Batang', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .address {
+    font-size: 1.45rem;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+  .address small {
+    display: block;
+    font-size: 0.75em;
+    color: var(--ink-soft);
+  }
+  .mini-map {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    display: block;
+    border: 1px solid var(--gold-soft);
+    border-radius: 8px;
+    background: #fbfaf7;
+  }
+  .map-link {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: 'Gowun Batang', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.12em;
+    color: var(--wax);
+    text-decoration: none;
+    border-bottom: 1px solid var(--wax-light);
+    padding-bottom: 2px;
+  }
+  .map-link:hover { color: var(--wax-dark); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flap, .card-wrap, .envelope, .seal { transition: none !important; }
+    .scene.settled .card { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" id="scene">
+  <p class="hint">보라색 실링을 눌러 봉투를 열어보세요</p>
+
+  <div class="envelope" id="envelope">
+    <div class="env-back"></div>
+
+    <div class="card-wrap" id="cardWrap">
+      <div class="card">
+        <div class="card-inner" id="cardInner">
+          <div class="card-top-line"></div>
+          <p class="card-eyebrow">Invitation</p>
+
+          <p class="greeting">소중한 당신을<br>조촐한 점심 자리에 초대합니다.</p>
+
+          <div class="divider" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+              <path d="M12 3l2.4 6.1L21 12l-6.6 2.9L12 21l-2.4-6.1L3 12l6.6-2.9L12 3z"/>
+            </svg>
+          </div>
+
+          <div class="details">
+            <div class="detail">
+              <p class="label">일 시</p>
+              <p class="value">2026년 7월 17일 (금)<br>오후 12시 30분</p>
+            </div>
+            <div class="detail">
+              <p class="label">장 소</p>
+              <p class="value">매튜 <small>MATTHEW · 성수</small></p>
+            </div>
+            <div class="detail">
+              <p class="label">참석 안내</p>
+              <p class="value">참석 여부를 7월 16일까지 알려주세요.</p>
+            </div>
+            <div class="detail">
+              <p class="label">인 원</p>
+              <p class="value">이 초대장을 받으신 본인 한 분만 모십니다.</p>
+            </div>
+          </div>
+
+          <div class="map-section">
+            <p class="label">오시는 길</p>
+            <p class="address">서울 성동구 뚝섬로15길 31, 1층<br><small>성수역 인근 · 성수동2가 256-3</small></p>
+
+            <svg class="mini-map" viewBox="0 0 360 200" role="img" aria-label="매튜 성수 약도: 성수역에서 뚝섬로를 따라 걷다가 뚝섬로15길로 들어오면 매튜가 있습니다.">
+              <line x1="20" y1="150" x2="340" y2="150" stroke="#d9d4c8" stroke-width="10" stroke-linecap="round"/>
+              <line x1="230" y1="150" x2="230" y2="40" stroke="#d9d4c8" stroke-width="8" stroke-linecap="round"/>
+              <text x="180" y="176" text-anchor="middle" font-family="Gowun Batang, serif" font-size="11" fill="#8a857c">뚝섬로</text>
+              <text x="245" y="95" font-family="Gowun Batang, serif" font-size="11" fill="#8a857c">뚝섬로15길</text>
+              <rect x="52" y="128" width="44" height="20" rx="4" fill="#6b4f9e"/>
+              <text x="74" y="142" text-anchor="middle" font-family="Gowun Batang, serif" font-size="10" fill="#fff">성수역</text>
+              <path d="M96 138 H226 V64" fill="none" stroke="#c2a25c" stroke-width="2" stroke-dasharray="4 5" stroke-linecap="round"/>
+              <circle cx="230" cy="52" r="13" fill="#fff" stroke="#c2a25c" stroke-width="2"/>
+              <circle cx="230" cy="52" r="4" fill="#6b4f9e"/>
+              <text x="230" y="28" text-anchor="middle" font-family="Gowun Batang, serif" font-size="12" font-weight="700" fill="#3a3733">매튜</text>
+            </svg>
+
+            <a class="map-link" href="https://map.naver.com/p/search/%EB%A7%A4%ED%8A%9C%20%EC%84%B1%EC%88%98" target="_blank" rel="noopener">네이버 지도에서 보기 →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="env-front"></div>
+    <div class="env-bottom"></div>
+
+    <div class="flap">
+      <div class="face front"></div>
+      <div class="face back"></div>
+    </div>
+
+    <button class="seal" id="seal" aria-label="봉투 열기"></button>
+  </div>
+</div>
+
+<script>
+  const scene = document.getElementById('scene');
+  const seal = document.getElementById('seal');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  seal.addEventListener('click', () => {
+    if (scene.classList.contains('open')) return;
+    scene.classList.add('open');
+
+    const settleDelay = reduceMotion ? 50 : 1750;
+    setTimeout(() => {
+      scene.classList.add('settled');
+      window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }, settleDelay);
+  });
+</script>
+
+</body>
+</html>
